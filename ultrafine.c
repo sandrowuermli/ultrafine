@@ -14,9 +14,10 @@
  *   ultrafine both                  set every connected monitor to 100%
  *   ultrafine left                  set the monitor labeled "left" to 100%
  *   ultrafine both 60               set every connected monitor to 60%
- *   ultrafine 0x21142000 60         set by locationID
+ *   ultrafine 0x00200000 60         set by locationID
  *   ultrafine left 250nits          set an absolute nits value
  *   ultrafine identify              dim each monitor in turn and (re)assign labels
+ *   ultrafine help                  print usage
  *
  * Omitting the value means 100%.
  *
@@ -214,15 +215,15 @@ static int find_monitors(Monitor *mons, int max)
 	return count;
 }
 
-static void print_status(Monitor *mons, int count)
+static void print_status(FILE *out, Monitor *mons, int count)
 {
 	for (int i = 0; i < count; i++) {
 		if (0 > mons[i].nits) {
-			printf("%-10s port 0x%08x  unreadable\n", mons[i].label, mons[i].location);
+			fprintf(out, "%-10s port 0x%08x  unreadable\n", mons[i].label, mons[i].location);
 			continue;
 		}
 
-		printf("%-10s port 0x%08x  %3.0f%%  (%.0f nits)\n", mons[i].label, mons[i].location,
+		fprintf(out, "%-10s port 0x%08x  %3.0f%%  (%.0f nits)\n", mons[i].label, mons[i].location,
 			nits_to_percent(mons[i].nits), mons[i].nits / 100.0);
 	}
 }
@@ -252,8 +253,42 @@ static int run_identify(Monitor *mons, int count)
 	return 0;
 }
 
+static void print_usage(FILE *out)
+{
+	fprintf(out,
+		"ultrafine — brightness control for LG UltraFine displays, addressed by Thunderbolt port.\n"
+		"\n"
+		"Usage:\n"
+		"  ultrafine                     show every monitor and its current brightness\n"
+		"  ultrafine <target> [value]    set brightness; the value defaults to 100%%\n"
+		"  ultrafine identify            dim each monitor in turn and (re)assign labels\n"
+		"  ultrafine help                show this text\n"
+		"\n"
+		"Target:\n"
+		"  both | all                    every connected monitor\n"
+		"  <label>                       a monitor you named with 'identify' (e.g. left, right)\n"
+		"  0x...                         a monitor's location ID, as shown by 'ultrafine'\n"
+		"\n"
+		"Value:\n"
+		"  0-100                         percent, on a perceptual curve like the macOS slider\n"
+		"  <n>nits                       absolute brightness, 4 to 540 nits\n"
+		"\n"
+		"Examples:\n"
+		"  ultrafine both                both monitors to full brightness\n"
+		"  ultrafine left 30             the monitor labeled 'left' to 30%%\n"
+		"  ultrafine right 250nits       the monitor labeled 'right' to 250 nits\n"
+		"\n"
+		"Labels live in ~/.config/ultrafine/map.conf and follow the port, not the panel.\n"
+		"Run 'identify' again after plugging a monitor into a different port.\n");
+}
+
 int main(int argc, char **argv)
 {
+	if (1 < argc && (0 == strcmp(argv[1], "help") || 0 == strcmp(argv[1], "-h") || 0 == strcmp(argv[1], "--help"))) {
+		print_usage(stdout);
+		return 0;
+	}
+
 	Monitor mons[MAX_DISPLAYS];
 	int count = find_monitors(mons, MAX_DISPLAYS);
 	if (0 == count) {
@@ -262,12 +297,18 @@ int main(int argc, char **argv)
 	}
 
 	if (1 == argc) {
-		print_status(mons, count);
+		print_status(stdout, mons, count);
 		return 0;
 	}
 
 	if (0 == strcmp(argv[1], "identify"))
 		return run_identify(mons, count);
+
+	if ('-' == argv[1][0]) {
+		fprintf(stderr, "ultrafine: unknown option '%s'\n\n", argv[1]);
+		print_usage(stderr);
+		return 2;
+	}
 
 	const char *target = argv[1];
 	// A bare target means full brightness — the case this tool exists for.
@@ -294,8 +335,9 @@ int main(int argc, char **argv)
 	}
 
 	if (0 == hits) {
-		fprintf(stderr, "ultrafine: no monitor matches '%s'. Known:\n", target);
-		print_status(mons, count);
+		fprintf(stderr, "ultrafine: no monitor matches '%s'. Connected:\n", target);
+		print_status(stderr, mons, count);
+		fprintf(stderr, "Name them with 'ultrafine identify', or see 'ultrafine help'.\n");
 		return 1;
 	}
 
@@ -303,7 +345,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < count; i++)
 		mons[i].nits = read_nits(mons[i].device);
 
-	print_status(mons, count);
+	print_status(stdout, mons, count);
 
 	return 0;
 }

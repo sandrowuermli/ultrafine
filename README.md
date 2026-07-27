@@ -97,9 +97,10 @@ ultrafine left 30          set one monitor to 30%
 ultrafine right 250nits    set an absolute nits value
 ultrafine 0x00200000 60    address a monitor by its location ID
 ultrafine identify         (re)assign labels
+ultrafine help             print usage (also -h and --help)
 ```
 
-Omitting the value means 100%. Labels are free text — name them `desk`, `vertical`, `a` and `b`, whatever fits your setup.
+Omitting the value means 100%. `help` works with no monitors connected. Labels are free text — name them `desk`, `vertical`, `a` and `b`, whatever fits your setup.
 
 Status output:
 

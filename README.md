@@ -15,7 +15,39 @@ I have two LG UltraFine 5K monitors. Same model, same firmware. For years, adjus
 
 My workaround was unplugging and replugging monitors until the sliders behaved. Sometimes one replug was enough, sometimes I had to unplug both and start over. Pure luck.
 
-So I went looking for the actual reason.
+### This has been broken since day one
+
+Not a local quirk, and not new. The UltraFine 5K arrived at the end of 2016 as
+Apple's official Retina display for the first Thunderbolt 3 MacBook Pro, and
+brightness control on it has been failing in public ever since:
+
+- **January 2017** — the brightness slider for the LG 5K is missing entirely.
+  The Apple Support thread runs for more than a year, collects NVRAM-reset
+  folklore, gets no answer from Apple, and is closed by the system.
+  ([thread](https://discussions.apple.com/thread/7827966))
+- **February 2020** — two UltraFine 5Ks on Catalina: "the brightness adjustment
+  icon appears to show it reducing on the correct screen but the actual
+  brightness changes on the other one." The best advice on offer is downgrading
+  to High Sierra, "the last stable OS with external monitors."
+  ([thread](https://forums.macrumors.com/threads/problem-w-dual-lg-5k-monitors.2223426/))
+- **January 2022** — reported against MonitorControl on an M1 Max with 2×
+  UltraFine 5K. Closed as out of scope, because the display is not on DDC:
+  "the UltraFine 5K is controlled natively by macOS (MC also uses Apple's APIs
+  to control the display)." The usual third-party brightness tools cannot reach
+  this pairing at all.
+  ([discussion](https://github.com/MonitorControl/MonitorControl/discussions/874))
+- **March 2024** — slider greyed out on an M2 Max, while a 2017 MacBook Air
+  drives the same panel without trouble. Thread closed with zero replies.
+  ([thread](https://discussions.apple.com/thread/255545858))
+
+Nine and a half years, Intel and Apple Silicon, every macOS release from Sierra
+onward. No fix has shipped from either side, and none of those reports ever got
+an official answer. The remedies that circulate — reset the NVRAM, replug the
+Thunderbolt cable, move USB peripherals off the monitor's hub, reboot with one
+display disconnected — do not fix anything. They only re-roll the guess
+described below, which is why they work once and then stop.
+
+So I went looking for the actual reason myself.
 
 ### The cause
 
@@ -116,3 +148,17 @@ left       port 0x00200000   30%  (65 nits)
 - It writes brightness directly to the panel, so the macOS slider position may no longer reflect reality until you touch it again.
 - Developed against the UltraFine 5K. Other UltraFine models expose the same HID interface and should work; the tool matches on vendor and usage page, not on a product ID.
 - One monitor, three monitors, mixed models: all fine. Every connected LG brightness endpoint is discovered at runtime.
+
+## Trademarks
+
+LG, UltraFine and LG UltraFine are trademarks or registered trademarks of
+LG Electronics Inc. Apple, Mac, macOS, MacBook Pro, Apple Silicon and Xcode are
+trademarks of Apple Inc. Thunderbolt is a trademark of Intel Corporation.
+
+This is an independent, unofficial tool. It is not affiliated with, endorsed by,
+sponsored by or supported by LG Electronics, Apple or Intel. Those names are
+used here only to identify the hardware and software this tool works with.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

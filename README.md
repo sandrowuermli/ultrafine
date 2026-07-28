@@ -148,6 +148,7 @@ left       port 0x00200000   30%  (65 nits)
 - It writes brightness directly to the panel, so the macOS slider position may no longer reflect reality until you touch it again.
 - Developed against the UltraFine 5K. Other UltraFine models expose the same HID interface and should work; the tool matches on vendor and usage page, not on a product ID.
 - One monitor, three monitors, mixed models: all fine. Every connected LG brightness endpoint is discovered at runtime.
+- It writes a HID feature report straight to the display's brightness endpoint — the same report macOS itself writes, clamped to the panel's 4–540 nit range. It touches nothing else and installs nothing persistent. Still, it addresses your hardware directly: use it at your own risk, without warranty of any kind (see [LICENSE](LICENSE)).
 
 ## Trademarks
 

@@ -100,7 +100,7 @@ cd ultrafine
 
 `build.sh` compiles a native arm64 binary, ad-hoc signs it, and installs it to `~/.local/bin/ultrafine`. Make sure that directory is on your `PATH`.
 
-Pass a file or a directory to build somewhere else — `./build.sh ../vendor/bin/ultrafine` — which is what a project that vendors this repo as a submodule does.
+Pass a file or a directory to build somewhere else — `./build.sh /tmp/ultrafine`.
 
 `ultrafine` and `ultrafine both` work immediately, with no setup. To address a single monitor by name, label them once:
 
